@@ -69,4 +69,10 @@ export class PostResolver {
       };
     }
   }
+
+  // add comment
+  // like and dislike
+  // comment like and dislike
+  // reply to comment
+  //
 }
