@@ -1,28 +1,23 @@
-import { Arg, Ctx, Mutation, Query, Resolver } from 'type-graphql';
+import { Arg, Ctx } from 'type-graphql';
 import { Context } from '../context';
 import bcrypt from 'bcrypt';
-import { error } from 'console';
-import { User, ResponseMessage } from '../objectTypes';
 
-@Resolver(ResponseMessage)
-export class UserResolver {
-  @Query(() => [User])
-  async users(@Ctx() { prisma }: Context) {
+class UserServices {
+  async getAllUsers(@Ctx() { prisma }: Context) {
     return prisma.user.findMany();
   }
 
-  @Query(() => ResponseMessage)
   async login(
     @Arg('email') email: string,
     @Arg('password') password: string,
     @Ctx() { prisma }: Context
   ) {
     try {
-      const emailExist = await prisma.user.findFirst({
+      const user = await prisma.user.findFirst({
         where: { email: email },
       });
 
-      if (!emailExist) {
+      if (!user) {
         return {
           message: 'error',
           error: {
@@ -32,15 +27,12 @@ export class UserResolver {
         };
       }
 
-      const matchingPassword = bcrypt.compareSync(
-        password,
-        emailExist.password
-      );
+      const matchingPassword = bcrypt.compareSync(password, user.password);
 
       if (matchingPassword) {
         return {
           message: 'logged in',
-          user: User,
+          user,
         };
       } else {
         return {
@@ -52,11 +44,16 @@ export class UserResolver {
         };
       }
     } catch (error) {
-      return error;
+      return {
+        message: 'error',
+        error: {
+          field: 'error',
+          message: error,
+        },
+      };
     }
   }
 
-  @Mutation(() => ResponseMessage)
   async createUser(
     @Arg('name') name: string,
     @Arg('email') email: string,
@@ -94,7 +91,9 @@ export class UserResolver {
         user: user,
       };
     } catch (err) {
-      return error;
+      return err;
     }
   }
 }
+
+export default UserServices;

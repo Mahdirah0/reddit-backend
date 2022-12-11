@@ -1,15 +1,11 @@
-import { Arg, Query, Resolver, Ctx, Mutation } from 'type-graphql';
+import { Arg, Ctx } from 'type-graphql';
 import { Context } from '../context';
-import { Post, ResponseMessage } from '../objectTypes';
 
-@Resolver(ResponseMessage)
-export class PostResolver {
-  @Query(() => [Post])
-  async posts(@Ctx() { prisma }: Context) {
+class PostServices {
+  async getAllPosts(@Ctx() { prisma }: Context) {
     return await prisma.post.findMany();
   }
 
-  @Query(() => ResponseMessage)
   async getPost(@Arg('id') id: string, @Ctx() { prisma }: Context) {
     try {
       const findPost = await prisma.post.findFirst({ where: { id: id } });
@@ -25,7 +21,7 @@ export class PostResolver {
       }
 
       return {
-        message: 'found post',
+        message: 'post found',
         post: findPost,
       };
     } catch (error) {
@@ -39,9 +35,8 @@ export class PostResolver {
     }
   }
 
-  @Mutation(() => ResponseMessage)
   async createPost(
-    @Arg('id') id: string,
+    @Arg('userId') userId: string,
     @Arg('title') title: string,
     @Arg('description') description: string,
     @Ctx() { prisma }: Context
@@ -51,7 +46,7 @@ export class PostResolver {
         data: {
           title,
           description,
-          userId: id,
+          userId,
         },
       });
 
@@ -70,9 +65,9 @@ export class PostResolver {
     }
   }
 
-  // add comment
-  // like and dislike
-  // comment like and dislike
-  // reply to comment
-  //
+  async editPost(@Arg('postId') postId: string, @Ctx() { prisma }: Context) {
+    return '';
+  }
 }
+
+export default PostServices;
