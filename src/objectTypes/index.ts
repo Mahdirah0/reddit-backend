@@ -26,7 +26,6 @@ export class User {
   @Field(() => String)
   email: string;
 
-  // @Field(() => String)
   password: string;
 }
 
@@ -52,4 +51,7 @@ export class ResponseMessage {
 
   @Field(() => String)
   message: string;
+
+  @Field(() => String, { nullable: true })
+  token?: string;
 }

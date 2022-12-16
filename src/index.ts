@@ -10,10 +10,12 @@ import { Context } from './context';
 import http from 'http';
 import cors from 'cors';
 import { json } from 'body-parser';
+import { authChecker } from './authChecker';
 
 import express from 'express';
 
 import { PostResolver, UserResolver } from './resolvers';
+import { User } from './objectTypes';
 
 const main = async () => {
   const app = express();
@@ -23,6 +25,7 @@ const main = async () => {
 
   const schema = await buildSchema({
     resolvers: [PostResolver, UserResolver],
+    authChecker,
   });
 
   const server = new ApolloServer<Context>({
@@ -36,12 +39,13 @@ const main = async () => {
     cors<cors.CorsRequest>(),
     json(),
     expressMiddleware(server, {
-      context: async ({ req, res }) => ({
-        token: req.headers.token,
-        prisma,
-        req,
-        res,
-      }),
+      context: async ({ req }) => {
+        const token: string = req.headers.authorization || '';
+        return {
+          token,
+          prisma,
+        };
+      },
     })
   );
 
